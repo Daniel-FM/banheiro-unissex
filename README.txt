@@ -18,42 +18,42 @@ Exemplo de saída (TOTAL_PESSOAS = 10; NUM_BOXES = 3):
 H
 
 |H| | |
-M
-MM
-MMM
-MMMH
-| | | |
-MMH
-|M| | |
-MH
-|M|M| |
 H
-|M|M|M|
-HM
-HMM
-HMMM
-|M| |M|
-HMMMM
-HMMMMM
-Chegaram todas as pessoas!
-| | |M|
-| | | |
-MMMMM
-|H| | |
-| | | |
-MMMM
-|M| | |
-MMM
-|M|M| |
-MM
-|M|M|M|
-|M| |M|
-M
-|M|M|M|
-| |M|M|
 
+|H|H| |
+M
+MM
+MMM
+MMMM
+| |H| |
+MMMMH
+| | | |
+MMMH
+|M| | |
+MMH
+|M|M| |
+MH
+|M|M|M|
+MHH
+MHHM
+MHHMM
+Chegaram todas as pessoas!
+|M| |M|
+HHMM
 |M|M|M|
 |M|M| |
+| |M| |
+| | | |
+HMM
+|H| | |
+MM
+|H|H| |
+| |H| |
+| | | |
+M
 |M| | |
+
+|M|M| |
+| |M| |
 | | | |
 FIM!
