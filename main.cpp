@@ -15,6 +15,7 @@
 #include <list>
 #include <array>
 #include <condition_variable>
+#include <atomic>
 
 using namespace std;
 
@@ -23,7 +24,7 @@ constexpr int SEM_BOX_DISP = -1;
 constexpr int TOTAL_PESSOAS = 20;
 constexpr int NUM_BOXES = 4;
 
-int qtdPessoasQueUsaram = 0;
+atomic<int> qtdPessoasQueUsaram = 0;
 array<char, NUM_BOXES> boxes;
 list<char> fila;
 
@@ -35,13 +36,11 @@ uniform_int_distribution rand_tempoBox(2000, 8000);
 mutex mut_print;
 mutex mut_fila;
 mutex mut_box;
-mutex mut_qtdPessoasQueUsaram;
 
 condition_variable cv_filaNaoMaisVazia;
 condition_variable cv_boxUsado;
 
 void imprime_boxes(){
-    lock_guard lck(mut_print);
     for (char box : boxes){
         cout<<"|"<< box;
     }
@@ -49,7 +48,6 @@ void imprime_boxes(){
 }
 
 void imprime_fila(){
-    lock_guard lck(mut_print);
     for (char pessoa : fila){
         cout<<pessoa;
     }
@@ -57,7 +55,6 @@ void imprime_fila(){
 }
 
 void imprime(string str){
-    lock_guard lck(mut_print);
     cout<<str<<endl;
 }
 
@@ -65,7 +62,7 @@ void usar_box(int boxSendoUsado){
     int tempoDeUso = rand_tempoBox(mt);
     this_thread::sleep_for(chrono::milliseconds(tempoDeUso));
     
-    scoped_lock lck1(mut_box, mut_qtdPessoasQueUsaram);
+    lock_guard lck1(mut_box);
     boxes[boxSendoUsado] = ' ';
     qtdPessoasQueUsaram++;
 
@@ -96,16 +93,14 @@ void popula_fila(){
         int novaPessoa = rand_genero(mt);
 		bool filaEstavaVazia = false;
 
-        InsereNaFila:{
-            lock_guard lck(mut_fila);
-			filaEstavaVazia = fila.empty() ? true : false;
-            fila.push_back(novaPessoa == 0 ? 'H' : 'M');
-            imprime_fila();
+		lock_guard lck(mut_fila);
+		filaEstavaVazia = fila.empty() ? true : false;
+		fila.push_back(novaPessoa == 0 ? 'H' : 'M');
+		imprime_fila();
 
-			if (filaEstavaVazia){
-				cv_filaNaoMaisVazia.notify_one();
-			}
-        }
+		if (filaEstavaVazia){
+			cv_filaNaoMaisVazia.notify_one();
+		}
     }
     imprime("Chegaram todas as pessoas!");
 }
@@ -114,11 +109,8 @@ void esvazia_fila(){
     vector<thread> usosDosBoxes;
 
     while (true){
-		ChecaSeDeveFinalizar:{
-			lock_guard lck_checaQtdPessoas(mut_qtdPessoasQueUsaram);
-			if (qtdPessoasQueUsaram >= TOTAL_PESSOAS){
-				break;
-			}
+		if (qtdPessoasQueUsaram >= TOTAL_PESSOAS){
+			break;
 		}
 
 		char generoDaPessoaNoInicioDaFila;
@@ -175,5 +167,5 @@ int main()
     t1.join();
     t2.join();
 
-    cout<<"FIM!"<<endl;
+    imprime("FIM!");
 }
