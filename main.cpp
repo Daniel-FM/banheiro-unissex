@@ -41,32 +41,32 @@ condition_variable cv_filaNaoMaisVazia;
 condition_variable cv_boxUsado;
 
 void imprime_boxes(){
-    for (char box : boxes){
-        cout<<"|"<< box;
-    }
-    cout<<"|"<<endl;
+	for (char box : boxes){
+		cout<<"|"<< box;
+	}
+	cout<<"|"<<endl;
 }
 
 void imprime_fila(){
-    for (char pessoa : fila){
-        cout<<pessoa;
-    }
-    cout<<endl;
+	for (char pessoa : fila){
+		cout<<pessoa;
+	}
+	cout<<endl;
 }
 
 void imprime(string str){
-    cout<<str<<endl;
+	cout<<str<<endl;
 }
 
 void usar_box(int boxSendoUsado){
-    int tempoDeUso = rand_tempoBox(mt);
-    this_thread::sleep_for(chrono::milliseconds(tempoDeUso));
-    
-    lock_guard lck1(mut_box);
-    boxes[boxSendoUsado] = ' ';
-    qtdPessoasQueUsaram++;
+	int tempoDeUso = rand_tempoBox(mt);
+	this_thread::sleep_for(chrono::milliseconds(tempoDeUso));
+	
+	lock_guard lck1(mut_box);
+	boxes[boxSendoUsado] = ' ';
+	qtdPessoasQueUsaram++;
 
-    imprime_boxes();
+	imprime_boxes();
 	cv_boxUsado.notify_one();
 }
 
@@ -88,9 +88,9 @@ int pega_box_disponivel(char generoDaPessoaNoInicioDaFila){
 }
 
 void popula_fila(){
-    for (int i = 0; i < TOTAL_PESSOAS; i++){
-        this_thread::sleep_for(chrono::milliseconds(rand_tempoFila(mt)));
-        int novaPessoa = rand_genero(mt);
+	for (int i = 0; i < TOTAL_PESSOAS; i++){
+		this_thread::sleep_for(chrono::milliseconds(rand_tempoFila(mt)));
+		int novaPessoa = rand_genero(mt);
 		bool filaEstavaVazia = false;
 
 		lock_guard lck(mut_fila);
@@ -101,14 +101,14 @@ void popula_fila(){
 		if (filaEstavaVazia){
 			cv_filaNaoMaisVazia.notify_one();
 		}
-    }
-    imprime("Chegaram todas as pessoas!");
+	}
+	imprime("Chegaram todas as pessoas!");
 }
 
 void esvazia_fila(){
-    vector<thread> usosDosBoxes;
+	vector<thread> usosDosBoxes;
 
-    while (true){
+	while (true){
 		if (qtdPessoasQueUsaram >= TOTAL_PESSOAS){
 			break;
 		}
@@ -123,8 +123,8 @@ void esvazia_fila(){
 			};
 			generoDaPessoaNoInicioDaFila = fila.front();
 		}
-        
-        int boxDisponivel = SEM_BOX_DISP;
+		
+		int boxDisponivel = SEM_BOX_DISP;
 
 		EsperaTerBoxDisponivel:{
 			unique_lock lck_esperaBoxSerUsado(mut_box);
@@ -149,23 +149,23 @@ void esvazia_fila(){
 			// Começa a usar o box em uma nova thread
 			usosDosBoxes.emplace_back(thread(usar_box, boxDisponivel));
 		}
-    }
+	}
 
-    for (auto& thr : usosDosBoxes){
-        thr.join();
-    }
+	for (auto& thr : usosDosBoxes){
+		thr.join();
+	}
 }
 
 int main()
 {
-    // Inicializa o array dos boxes
-    boxes.fill(' ');
+	// Inicializa o array dos boxes
+	boxes.fill(' ');
 
-    thread t1(popula_fila);
-    thread t2(esvazia_fila);
-    
-    t1.join();
-    t2.join();
+	thread t1(popula_fila);
+	thread t2(esvazia_fila);
+	
+	t1.join();
+	t2.join();
 
-    imprime("FIM!");
+	imprime("FIM!");
 }
